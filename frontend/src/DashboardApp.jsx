@@ -2,13 +2,15 @@ import React, { useState, useEffect } from 'react';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import ProfileSettings from './components/ProfileSettings';
+import LogoutConfirmationDialog from './components/LogoutConfirmationDialog'; // corrected file name
 
-// This is the main application component for a logged-in user
+
 const DashboardApp = ({ onLogout }) => {
   const [activePage, setActivePage] = useState('dashboard');
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [userName, setUserName] = useState('Aman Bahuguna');
   const [profileImage, setProfileImage] = useState(null);
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false); // NEW: track logout dialog
 
   useEffect(() => {
     const savedImage = localStorage.getItem('profileImage');
@@ -18,13 +20,22 @@ const DashboardApp = ({ onLogout }) => {
   const handleNavigate = (page) => setActivePage(page);
   const toggleProfileSettings = () => setIsProfileOpen(!isProfileOpen);
 
+  // NEW: Open logout dialog
+  const handleLogoutClick = () => setIsLogoutOpen(true);
+
+  // NEW: Confirm logout
+  const handleLogoutConfirm = () => {
+    setIsLogoutOpen(false);
+    if (onLogout) onLogout(); // call the passed logout function
+  };
+
   return (
     <div className="h-screen bg-zinc-200 p-4 font-sans">
       <div className="flex h-full w-full rounded-2xl shadow-sm overflow-hidden">
         <Sidebar 
           activePage={activePage} 
           onNavigate={handleNavigate} 
-          onLogoutClick={onLogout}
+          onLogoutClick={handleLogoutClick} // pass the new handler
         />
         <main className="flex-1 p-8 overflow-y-auto bg-white">
           <Header 
@@ -38,6 +49,7 @@ const DashboardApp = ({ onLogout }) => {
           </div>
         </main>
       </div>
+
       {isProfileOpen && (
         <ProfileSettings 
           onClose={toggleProfileSettings} 
@@ -47,6 +59,13 @@ const DashboardApp = ({ onLogout }) => {
           onProfileImageChange={setProfileImage}
         />
       )}
+
+      {/* NEW: Logout confirmation dialog */}
+      <LogoutConfirmationDialog 
+        isOpen={isLogoutOpen} 
+        onClose={() => setIsLogoutOpen(false)}
+        onConfirm={handleLogoutConfirm}
+      />
     </div>
   );
 }

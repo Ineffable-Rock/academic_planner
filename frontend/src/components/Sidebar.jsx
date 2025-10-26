@@ -10,19 +10,18 @@ import {
   LogOut,
 } from 'lucide-react';
 
+// Sidebar now accepts `onLogoutClick`
 const Sidebar = ({ activePage, onNavigate, onLogoutClick }) => {
   return (
     <div className="flex flex-col justify-between h-full p-6 w-64 bg-zinc-900 text-zinc-100 rounded-l-2xl">
       <div>
-        {/* Logo */}
         <div className="flex items-center gap-3 mb-12">
-          <div className="p-2 bg-white rounded-lg">
-            <GraduationCap size={24} className="text-zinc-900" />
-          </div>
-          <span className="text-2xl font-bold text-zinc-100">AcaPlanner</span>
+            <div className="p-2 bg-white rounded-lg">
+                <GraduationCap size={24} className="text-zinc-900" />
+            </div>
+            <span className="text-2xl font-bold text-zinc-100">AcaPlanner</span>
         </div>
 
-        {/* Navigation */}
         <nav className="flex flex-col gap-y-3">
           <NavItem 
             icon={<LayoutDashboard size={20} />} 
@@ -40,7 +39,6 @@ const Sidebar = ({ activePage, onNavigate, onLogoutClick }) => {
         </nav>
       </div>
 
-      {/* Bottom section */}
       <div className="flex flex-col gap-y-3">
         <NavItem 
           icon={<Settings size={20} />} 
@@ -48,7 +46,7 @@ const Sidebar = ({ activePage, onNavigate, onLogoutClick }) => {
           onClick={() => onNavigate('settings')} 
           isActive={activePage === 'settings'}
         />
-        {/* This button now triggers the logout function from App.jsx */}
+        {/* MODIFIED: The Logout button now calls onLogoutClick */}
         <NavItem
           icon={<LogOut size={20} />}
           label="Logout"
@@ -60,17 +58,17 @@ const Sidebar = ({ activePage, onNavigate, onLogoutClick }) => {
 };
 
 const NavItem = ({ icon, label, onClick, isActive }) => (
-  <button
-    onClick={onClick}
-    className={`flex items-center text-left w-full gap-3 p-3 rounded-lg font-medium transition-colors ${
-      isActive
-        ? 'bg-white text-zinc-900 shadow-md'
-        : 'text-zinc-400 hover:bg-zinc-800'
-    }`}
-  >
-    {React.cloneElement(icon)}
-    <span>{label}</span>
-  </button>
+    <button
+        onClick={onClick}
+        className={`flex items-center text-left w-full gap-3 p-3 rounded-lg font-medium transition-colors ${
+        isActive
+            ? 'bg-white text-zinc-900 shadow-md'
+            : 'text-zinc-400 hover:bg-zinc-800'
+        }`}
+    >
+        {React.cloneElement(icon)}
+        <span>{label}</span>
+    </button>
 );
 
 export default Sidebar;
