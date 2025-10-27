@@ -1,43 +1,45 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { 
   ArrowLeft, Mail, Linkedin, Twitter, Github, GraduationCap, ArrowRight, Send, CheckCircle
 } from 'lucide-react';
+import { db } from '../firebase'; // Import the firestore instance
+import { collection, addDoc } from "firebase/firestore"; 
 
 // --- Navbar Component ---
 const Navbar = ({ onAuthClick, onBack }) => (
-  <motion.header 
-    initial={{ y: -60, opacity: 0 }}
-    animate={{ y: 0, opacity: 1 }}
-    transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }} // smoother cubic easing
-    className="fixed top-0 w-full z-50"
-  >
-    <nav className="container mx-auto px-6 h-20 flex items-center justify-between border-b border-zinc-800 bg-[#111111]/80 backdrop-blur-md">
-      <div className="flex items-center gap-3">
-        <GraduationCap size={28} className="text-white" />
-        <span className="text-xl font-bold text-white">AcaPlanner</span>
-      </div>
-      <div className="hidden md:flex items-center gap-8 text-zinc-400">
-        <button onClick={onBack} className="hover:text-white transition-colors">Home</button>
-        <a href="#" className="hover:text-white transition-colors">Features</a>
-        <a href="#" className="hover:text-white transition-colors">About Us</a>
-      </div>
-      <div className="flex items-center gap-4">
-        <button
-          onClick={() => onAuthClick('signin')}
-          className="px-5 py-2 text-white font-semibold rounded-md hover:bg-zinc-800 transition-colors"
-        >
-          Sign In
-        </button>
-        <button
-          onClick={() => onAuthClick('signup')}
-          className="px-5 py-2 bg-white text-black font-semibold rounded-md hover:bg-zinc-200 transition-colors"
-        >
-          Sign Up
-        </button>
-      </div>
-    </nav>
-  </motion.header>
+    <motion.header
+        initial={{ y: -60, opacity: 0 }}
+        animate={{ y: 0, opacity: 1 }}
+        transition={{ duration: 0.9, ease: [0.25, 0.1, 0.25, 1] }}
+        className="fixed top-0 w-full z-50"
+    >
+        <nav className="container mx-auto px-6 h-20 flex items-center justify-between border-b border-zinc-800 bg-[#111111]/80 backdrop-blur-md">
+            <div className="flex items-center gap-3">
+                <GraduationCap size={28} className="text-white" />
+                <span className="text-xl font-bold text-white">AcaPlanner</span>
+            </div>
+            <div className="hidden md:flex items-center gap-8 text-zinc-400">
+                <button onClick={onBack} className="hover:text-white transition-colors">Home</button>
+                <a href="#" className="hover:text-white transition-colors">Features</a>
+                <a href="#" className="hover:text-white transition-colors">About Us</a>
+            </div>
+            <div className="flex items-center gap-4">
+                <button
+                    onClick={() => onAuthClick('signin')}
+                    className="px-5 py-2 text-white font-semibold rounded-md hover:bg-zinc-800 transition-colors"
+                >
+                    Sign In
+                </button>
+                <button
+                    onClick={() => onAuthClick('signup')}
+                    className="px-5 py-2 bg-white text-black font-semibold rounded-md hover:bg-zinc-200 transition-colors"
+                >
+                    Sign Up
+                </button>
+            </div>
+        </nav>
+    </motion.header>
 );
 
 // --- Footer Component ---
@@ -110,6 +112,40 @@ const Footer = ({ onAuthClick }) => (
 
 // --- Main Contact Page ---
 const ContactPage = ({ onBack, onAuthClick }) => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    university: '',
+    inquiry: '',
+    message: '',
+  });
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitted, setIsSubmitted] = useState(false);
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prevState => ({ ...prevState, [name]: value }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    try {
+      await addDoc(collection(db, "contactMessages"), {
+        ...formData,
+        timestamp: new Date(),
+        status: 'unresolved' // Default status
+      });
+      setIsSubmitted(true);
+    } catch (error) {
+      console.error("Error adding document: ", error);
+      alert('There was an error sending your message. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+
   const fadeUp = {
     hidden: { opacity: 0, y: 40 },
     visible: (i = 1) => ({
@@ -144,30 +180,49 @@ const ContactPage = ({ onBack, onAuthClick }) => {
 
           <div className="grid md:grid-cols-3 gap-16">
             {/* Left Side Form */}
-            <motion.form
-              className="md:col-span-2 space-y-8"
-              variants={{
-                hidden: { opacity: 0 },
-                visible: {
-                  opacity: 1,
-                  transition: { staggerChildren: 0.18 }
-                }
-              }}
-              initial="hidden"
-              animate="visible"
-            >
-              <FormInput number="01" label="What's your name?" placeholder="Dennis Hendry*" />
-              <FormInput number="02" label="What's your email?" placeholder="dennis.hendry@gmail.com*" />
-              <FormInput number="03" label="What's the name of your university/school?" placeholder="Hogwarts School of Witchcraft and Wizardry" />
-              <FormInput number="04" label="What's your inquiry about?" placeholder="Bug Report, Feature Suggestion, etc." />
-              <FormInput number="05" label="Your message" placeholder="Hello AcaPlanner team, can you help me with..*" isTextarea={true} />
-
-              <motion.div variants={fadeUp} custom={6} className="pt-4">
-                <button type="submit" className="px-8 py-3 text-lg border-2 border-zinc-700 rounded-full hover:bg-white hover:text-black transition-colors">
-                  Send It
+            {isSubmitted ? (
+              <motion.div
+                className="md:col-span-2 space-y-8 flex flex-col items-center justify-center text-center"
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+              >
+                <CheckCircle size={64} className="text-green-500" />
+                <h2 className="text-3xl font-bold">Thank you!</h2>
+                <p className="text-zinc-400">Your message has been sent successfully. We'll get back to you soon.</p>
+                <button
+                  onClick={onBack}
+                  className="px-8 py-3 text-lg border-2 border-zinc-700 rounded-full hover:bg-white hover:text-black transition-colors"
+                >
+                  Go Back
                 </button>
               </motion.div>
-            </motion.form>
+            ) : (
+              <motion.form
+                onSubmit={handleSubmit}
+                className="md:col-span-2 space-y-8"
+                variants={{
+                  hidden: { opacity: 0 },
+                  visible: {
+                    opacity: 1,
+                    transition: { staggerChildren: 0.18 }
+                  }
+                }}
+                initial="hidden"
+                animate="visible"
+              >
+                <FormInput number="01" label="What's your name?" name="name" placeholder="Dennis Hendry*" value={formData.name} onChange={handleChange} />
+                <FormInput number="02" label="What's your email?" name="email" placeholder="dennis.hendry@gmail.com*" value={formData.email} onChange={handleChange} />
+                <FormInput number="03" label="What's the name of your university/school?" name="university" placeholder="Hogwarts School of Witchcraft and Wizardry" value={formData.university} onChange={handleChange} />
+                <FormInput number="04" label="What's your inquiry about?" name="inquiry" placeholder="Bug Report, Feature Suggestion, etc." value={formData.inquiry} onChange={handleChange} />
+                <FormInput number="05" label="Your message" name="message" placeholder="Hello AcaPlanner team, can you help me with..*" isTextarea={true} value={formData.message} onChange={handleChange} />
+
+                <motion.div variants={fadeUp} custom={6} className="pt-4">
+                  <button type="submit" disabled={isSubmitting} className="px-8 py-3 text-lg border-2 border-zinc-700 rounded-full hover:bg-white hover:text-black transition-colors disabled:opacity-50">
+                    {isSubmitting ? 'Sending...' : 'Send It'}
+                  </button>
+                </motion.div>
+              </motion.form>
+            )}
 
             {/* Right Side Contact Info */}
             <motion.div
@@ -212,7 +267,7 @@ const ContactPage = ({ onBack, onAuthClick }) => {
 };
 
 // --- Animated Input Component ---
-const FormInput = ({ number, label, placeholder, isTextarea = false }) => (
+const FormInput = ({ number, label, name, placeholder, isTextarea = false, value, onChange }) => (
   <motion.div
     variants={{
       hidden: { opacity: 0, y: 25 },
@@ -226,14 +281,20 @@ const FormInput = ({ number, label, placeholder, isTextarea = false }) => (
     </label>
     {isTextarea ? (
       <textarea
+        name={name}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="w-full bg-transparent text-white text-lg mt-2 focus:outline-none resize-none"
         rows="3"
       />
     ) : (
       <input
         type="text"
+        name={name}
         placeholder={placeholder}
+        value={value}
+        onChange={onChange}
         className="w-full bg-transparent text-white text-lg mt-2 focus:outline-none"
       />
     )}

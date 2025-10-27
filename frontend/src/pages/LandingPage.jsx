@@ -5,25 +5,21 @@ import {
   Zap, Mail, Twitter, Instagram, Facebook, Linkedin, Github
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
-import ContactPage from './ContactPage';
 
 // Fade animations
 const fadeDown = { hidden: { opacity: 0, y: -50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } } };
 const fadeUp = { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } } };
 
-const LandingPage = () => {
+const LandingPage = ({ onContactClick }) => {
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
-  const [showContact, setShowContact] = useState(false);
 
   useEffect(() => {
     const moveCursor = (e) => setCursorPos({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', moveCursor);
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
-
-  const handleContactClick = () => setShowContact(true);
 
   return (
     <div className="bg-[#111111] text-white min-h-screen relative overflow-x-hidden">
@@ -44,7 +40,7 @@ const LandingPage = () => {
       <main className="space-y-24">
         {/* Hero Section */}
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
-          <HeroSection />
+          <HeroSection onContactClick={onContactClick} />
         </motion.div>
 
 
@@ -60,18 +56,10 @@ const LandingPage = () => {
 
       {/* Footer */}
       <motion.div variants={fadeDown} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }}>
-        <Footer onContactClick={handleContactClick} />
+        <Footer onContactClick={onContactClick} />
       </motion.div>
 
-      {/* Contact Modal */}
-      {showContact && (
-        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
-          <div className="bg-zinc-900 rounded-xl p-8 w-[90%] max-w-3xl relative">
-            <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white text-xl">✕</button>
-            <ContactPage />
-          </div>
-        </div>
-      )}
+      {/* The buggy modal has been removed from here */}
     </div>
   );
 };
@@ -106,7 +94,7 @@ const Navbar = () => (
 );
 
 // Hero Section
-const HeroSection = () => (
+const HeroSection = ({ onContactClick }) => (
   <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4">
     {/* Main Content */}
     <div>
@@ -152,9 +140,9 @@ const HeroSection = () => (
       </div>
     </div>
 
-    {/* ✅ Baseline pinned to bottom of viewport */}
+    {/* Baseline is passed the onContactClick prop */}
     <div className="absolute bottom-0 left-0 right-0">
-      <Baseline />
+      <Baseline onContactClick={onContactClick} />
     </div>
   </section>
 );
@@ -171,10 +159,6 @@ const Baseline = ({ onContactClick }) => (
         <a href="#" aria-label="Instagram" className="text-zinc-400 hover:text-white transition-colors"><Instagram size={20} /></a>
         <a href="#" aria-label="Facebook" className="text-zinc-400 hover:text-white transition-colors"><Facebook size={20} /></a>
       </div>
-      {/* <a href="mailto:bahugunaaman09@gmail.com" className="flex items-center gap-2 text-sm bg-zinc-800/50 border border-zinc-700 rounded-full px-4 py-2 hover:bg-zinc-800 transition-colors">
-        <Mail size={16} />
-        <span className="hidden md:inline">Contact Me</span>
-      </a> */}
       <button onClick={onContactClick} className="flex items-center gap-2 text-sm bg-zinc-800/50 border border-zinc-700 rounded-full px-4 py-2 hover:bg-zinc-800 transition-colors">
                 <Mail size={16} />
                 <span className="hidden md:inline">Contact Us</span>
@@ -246,7 +230,7 @@ const FeatureCard = ({ icon, title, description, colorClass, hoverBorderClass })
 };
 
 // Footer
-const Footer = ({ onAuthClick, onContactClick }) => (
+const Footer = ({ onContactClick }) => (
   <footer className="w-full mt-12 md:mt-24">
     <div className="container mx-auto px-6">
       <div className="relative group footer-container border border-[#c6b8ab71] rounded-lg pt-16 pb-32 md:pb-40 overflow-hidden">
@@ -274,27 +258,22 @@ const Footer = ({ onAuthClick, onContactClick }) => (
             </ul>
           </div>
           <div>
-            {/* <a href="mailto:bahugunaaman09@gmail.com" className="flex items-center justify-between text-white mb-6 hover:text-blue-400">
-              <div>
-                <h5 className="text-lg font-bold">Contact Me</h5>
-                <p className="text-base text-zinc-500">Say Hello!</p>
-              </div>
-              <ArrowRight size={22} />
-            </a> */}
-            <button onClick={() => onContactClick('signup')} className="w-full flex items-center justify-between text-white hover:text-blue-400 text-left">
+            <button onClick={onContactClick} className="w-full flex items-center justify-between text-white hover:text-blue-400 text-left mb-6">
               <div>
                 <h5 className="text-lg font-bold">Contact Us</h5>
                 <p className="text-base text-zinc-500">Say Hello!</p>
               </div>
               <ArrowRight size={22} />
             </button>
-            <button onClick={() => onAuthClick('signup')} className="w-full flex items-center justify-between text-white hover:text-blue-400 text-left">
-              <div>
-                <h5 className="text-lg font-bold">My Dashboard</h5>
-                <p className="text-base text-zinc-500">Explore Projects</p>
-              </div>
-              <ArrowRight size={22} />
-            </button>
+            <SignUpButton mode="modal">
+              <button className="w-full flex items-center justify-between text-white hover:text-blue-400 text-left">
+                <div>
+                  <h5 className="text-lg font-bold">My Dashboard</h5>
+                  <p className="text-base text-zinc-500">Explore Projects</p>
+                </div>
+                <ArrowRight size={22} />
+              </button>
+            </SignUpButton>
           </div>
         </div>
         <div className="absolute bottom-7 left-0 right-0 transform translate-y-1/2 text-center pointer-events-none footer-brand-text">
