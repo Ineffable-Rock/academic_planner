@@ -1,22 +1,16 @@
 import React from 'react';
 import { Search } from 'lucide-react';
 import NotificationBell from './NotificationBell';
+import { UserButton } from '@clerk/clerk-react'; // Import UserButton
 
-// A helper function to get initials, moved here for reusability
-const getInitials = (name) => {
-  const nameParts = name.split(' ');
-  if (nameParts.length > 1) {
-    return `${nameParts[0][0]}${nameParts[nameParts.length - 1][0]}`.toUpperCase();
-  }
-  return nameParts[0] ? nameParts[0][0].toUpperCase() : '';
-};
-
-// Component now accepts userName and profileImage
-const Header = ({ toggleProfileSettings, userName, profileImage }) => {
+const Header = ({ toggleProfileSettings, userName }) => {
+  // getInitials is no longer needed here if using UserButton
   return (
     <header className="flex justify-between items-center mb-8">
       <div>
-        <h1 className="text-3xl font-semibold text-zinc-900">Hi, {userName.split(' ')[0]}!</h1>
+        <h1 className="text-3xl font-semibold text-zinc-900">
+          Hi, {userName ? userName.split(' ')[0] : 'User'}!
+        </h1>
         <p className="text-zinc-500">Welcome to your AcaPlanner dashboard.</p>
       </div>
       <div className="flex items-center gap-4">
@@ -27,24 +21,8 @@ const Header = ({ toggleProfileSettings, userName, profileImage }) => {
           <Search size={20} />
         </button>
         <NotificationBell />
-        <button 
-          onClick={toggleProfileSettings} 
-          className="rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-          aria-label="Open profile settings"
-        >
-          {/* --- NEW: Conditional Avatar Rendering --- */}
-          {profileImage ? (
-            <img 
-              src={profileImage} 
-              alt="User Avatar" 
-              className="w-10 h-10 rounded-full object-cover border-2 border-white/80"
-            />
-          ) : (
-            <div className="w-10 h-10 rounded-full bg-zinc-700 text-white flex items-center justify-center font-bold border-2 border-white/80">
-              {getInitials(userName)}
-            </div>
-          )}
-        </button>
+        {/* UserButton handles the user menu, profile, and sign out */}
+        <UserButton afterSignOutUrl="/" />
       </div>
     </header>
   );

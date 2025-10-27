@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  GraduationCap, ArrowRight, BookOpen, BarChart2, Calendar, ListChecks, 
-  Zap, Mail, Twitter, Instagram, Facebook, Linkedin, Github 
+import { SignInButton, SignUpButton } from '@clerk/clerk-react';
+import {
+  GraduationCap, ArrowRight, BookOpen, BarChart2, Calendar, ListChecks,
+  Zap, Mail, Twitter, Instagram, Facebook, Linkedin, Github
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
 import ContactPage from './ContactPage';
@@ -10,66 +11,73 @@ import ContactPage from './ContactPage';
 const fadeDown = { hidden: { opacity: 0, y: -50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } } };
 const fadeUp = { hidden: { opacity: 0, y: 50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } } };
 
-const LandingPage = ({ onAuthClick, onContactClick }) => {
+const LandingPage = () => {
   const { scrollYProgress } = useScroll();
   const scaleX = useTransform(scrollYProgress, [0, 1], [0, 1]);
-
-  // Cursor State
   const [cursorPos, setCursorPos] = useState({ x: 0, y: 0 });
+  const [showContact, setShowContact] = useState(false);
+
   useEffect(() => {
     const moveCursor = (e) => setCursorPos({ x: e.clientX, y: e.clientY });
     window.addEventListener('mousemove', moveCursor);
     return () => window.removeEventListener('mousemove', moveCursor);
   }, []);
 
+  const handleContactClick = () => setShowContact(true);
+
   return (
     <div className="bg-[#111111] text-white min-h-screen relative overflow-x-hidden">
-      
       {/* Custom Cursor */}
-      <motion.div 
+      <motion.div
         style={{ x: cursorPos.x - 10, y: cursorPos.y - 10 }}
         className="w-5 h-5 rounded-full bg-blue-400 pointer-events-none fixed z-50 mix-blend-difference"
-        animate={{ scale: 1 }}
       />
 
       {/* Scroll Progress Bar */}
       <motion.div style={{ scaleX }} className="fixed top-0 left-0 h-1 bg-blue-500 origin-left z-50" />
 
-      {/* NAVBAR */}
+      {/* Navbar */}
       <motion.div variants={fadeDown} initial="hidden" animate="visible">
-        <Navbar onAuthClick={onAuthClick} />
+        <Navbar />
       </motion.div>
 
       <main className="space-y-24">
-        {/* HERO */}
+        {/* Hero Section */}
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
-          <HeroSection onAuthClick={onAuthClick} onContactClick={onContactClick} />
+          <HeroSection />
         </motion.div>
 
-        {/* ABOUT */}
+
+        {/* About & Features */}
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
           <AboutSection />
         </motion.div>
 
-        {/* FEATURES */}
         <motion.div variants={fadeUp} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.3 }}>
           <FeaturesSection />
         </motion.div>
       </main>
 
-      {/* FOOTER */}
+      {/* Footer */}
       <motion.div variants={fadeDown} initial="hidden" whileInView="visible" viewport={{ once: true, amount: 0.4 }}>
-        <Footer onAuthClick={onAuthClick} onContactClick={onContactClick} />
+        <Footer onContactClick={handleContactClick} />
       </motion.div>
+
+      {/* Contact Modal */}
+      {showContact && (
+        <div className="fixed inset-0 bg-black/60 flex justify-center items-center z-50">
+          <div className="bg-zinc-900 rounded-xl p-8 w-[90%] max-w-3xl relative">
+            <button onClick={() => setShowContact(false)} className="absolute top-4 right-4 text-zinc-400 hover:text-white text-xl">✕</button>
+            <ContactPage />
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-
-
-
 // Navbar
-const Navbar = ({ onAuthClick }) => (
+const Navbar = () => (
   <header className="fixed top-0 w-full z-50">
     <nav className="container mx-auto px-6 h-20 flex items-center justify-between border-b border-zinc-800 bg-[#111111]/80 backdrop-blur-md">
       <div className="flex items-center gap-3">
@@ -82,17 +90,26 @@ const Navbar = ({ onAuthClick }) => (
         <a href="#" className="hover:text-white transition-colors">About Us</a>
       </div>
       <div className="flex items-center gap-4">
-        <button onClick={() => onAuthClick('signin')} className="px-5 py-2 text-white font-semibold rounded-md hover:bg-zinc-800 transition-colors">Sign In</button>
-        <button onClick={() => onAuthClick('signup')} className="px-5 py-2 bg-white text-black font-semibold rounded-md hover:bg-zinc-200 transition-colors">Sign Up</button>
+        <SignInButton mode="modal">
+          <button className="px-5 py-2 text-white font-semibold rounded-md hover:bg-zinc-800 transition-colors">
+            Sign In
+          </button>
+        </SignInButton>
+        <SignUpButton mode="modal">
+          <button className="px-5 py-2 bg-white text-black font-semibold rounded-md hover:bg-zinc-200 transition-colors">
+            Sign Up
+          </button>
+        </SignUpButton>
       </div>
     </nav>
   </header>
 );
 
 // Hero Section
-const HeroSection = ({ onAuthClick, onContactClick }) => {
-  return (
-    <section className="min-h-screen flex flex-col items-center justify-center text-center px-4 relative">
+const HeroSection = () => (
+  <section className="relative min-h-screen flex flex-col items-center justify-center text-center px-4">
+    {/* Main Content */}
+    <div>
       <div className="mb-6 flex justify-center">
         <div className="flex items-center gap-3 bg-zinc-800/50 border border-zinc-700 rounded-full px-4 py-2">
           <div className="bg-blue-600 rounded-full p-1.5 flex items-center justify-center">
@@ -102,9 +119,7 @@ const HeroSection = ({ onAuthClick, onContactClick }) => {
         </div>
       </div>
 
-      {/* Main Title Wrapper */}
       <div className="relative">
-        {/* Floating "Powered-by AI" Tag */}
         <motion.div
           className="absolute -top-4 -right-4 md:-top-2 md:-right-8 text-sm md:text-base italic text-zinc-400"
           animate={{ y: [0, -3, 0], opacity: [1, 0.9, 1] }}
@@ -113,10 +128,9 @@ const HeroSection = ({ onAuthClick, onContactClick }) => {
           Powered-by <span className="text-purple-400 font-semibold">AI</span>
         </motion.div>
 
-        {/* Main Title with smooth floating */}
         <motion.div
           className="text-6xl md:text-8xl font-black uppercase tracking-tighter"
-          animate={{ y: [0, -5, 0], opacity: [1, 0.98, 1] }} // subtle float
+          animate={{ y: [0, -5, 0], opacity: [1, 0.98, 1] }}
           transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
         >
           <span className="text-[#f9b575] block">Academic</span>
@@ -125,25 +139,25 @@ const HeroSection = ({ onAuthClick, onContactClick }) => {
       </div>
 
       <p className="max-w-xl mx-auto mt-6 text-lg text-zinc-400">
-        Navigate your academic journey with a smart co-pilot. Visualize prerequisites, track progress, and get personalized course recommendations.
+        Navigate your academic journey with a smart co-pilot. Visualize prerequisites, track progress,
+        and get personalized course recommendations.
       </p>
-      
+
       <div className="flex justify-center mt-10">
-        <motion.button 
-          whileHover={{ scale: 1.05, boxShadow: "0px 4px 15px rgba(0,0,0,0.3)" }} 
-          onClick={() => onAuthClick('signup')} 
-          className="animated-button px-6 py-3 bg-blue-500 rounded-lg font-semibold flex items-center gap-2"
-        >
-          Get Started <ArrowRight className="h-4 w-4" />
-        </motion.button>
+        <SignUpButton mode="modal">
+          <button className="animated-button px-6 py-3 bg-blue-500 rounded-lg font-semibold flex items-center gap-2">
+            Get Started <ArrowRight className="h-4 w-4" />
+          </button>
+        </SignUpButton>
       </div>
-      
-      <Baseline onContactClick={onContactClick}/>
-    </section>
-  );
-};
+    </div>
 
-
+    {/* ✅ Baseline pinned to bottom of viewport */}
+    <div className="absolute bottom-0 left-0 right-0">
+      <Baseline />
+    </div>
+  </section>
+);
 
 
 
@@ -168,6 +182,8 @@ const Baseline = ({ onContactClick }) => (
     </div>
   </div>
 );
+
+
 
 // About Section
 const AboutSection = () => (
