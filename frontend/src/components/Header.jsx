@@ -28,4 +28,4 @@ const Header = ({ toggleProfileSettings, userName }) => {
   );
 };
 
-export default Header;
+export default Header; 

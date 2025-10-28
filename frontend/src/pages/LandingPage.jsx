@@ -5,6 +5,9 @@ import {
   Zap, Mail, Twitter, Instagram, Facebook, Linkedin, Github
 } from 'lucide-react';
 import { motion, useScroll, useTransform } from 'framer-motion';
+import clerkLogo from '../assets/Clerk.svg';
+import firebaseLogo from '../assets/firebase.svg';
+// import AnimatedBackground from '../components/AnimatedBackground';
 
 // Fade animations
 const fadeDown = { hidden: { opacity: 0, y: -50 }, visible: { opacity: 1, y: 0, transition: { duration: 0.8, ease: 'easeInOut' } } };
@@ -230,6 +233,7 @@ const FeatureCard = ({ icon, title, description, colorClass, hoverBorderClass })
 };
 
 // Footer
+// Footer
 const Footer = ({ onContactClick }) => (
   <footer className="w-full mt-12 md:mt-24">
     <div className="container mx-auto px-6">
@@ -282,9 +286,26 @@ const Footer = ({ onContactClick }) => (
       </div>
     </div>
     <div className="bg-[#111111]">
-      <div className="container mx-auto px-6 py-6 flex justify-between text-white font-bold text-base">
+      <div className="container mx-auto px-6 py-6 flex justify-between items-center text-zinc-400 text-sm">
         <span>©{new Date().getFullYear()} AcaPlanner - Privacy Policy</span>
-        <span className="flex items-center"><span className="dot-blink"></span>Dehradun, India</span>
+        
+        <div className="flex items-center gap-3">
+          <span className="text-zinc-500">Secured by</span>
+          <a href="https://clerk.com" target="_blank" rel="noopener noreferrer">
+            {/* --- MODIFIED LINE --- */}
+            <img src={clerkLogo} alt="Clerk Logo" className="h-4 opacity-80 hover:opacity-100 transition" />
+          </a>
+          <span className="text-zinc-500">| Data managed by</span>
+          <a href="https://firebase.google.com/" target="_blank" rel="noopener noreferrer">
+            {/* --- MODIFIED LINE --- */}
+            <img src={firebaseLogo} alt="Firebase Logo" className="h-5 opacity-80 hover:opacity-100 transition" />
+          </a>
+        </div>
+
+        <span className="flex items-center">
+          <span className="dot-blink"></span>
+          Dehradun, India
+        </span>
       </div>
     </div>
   </footer>
