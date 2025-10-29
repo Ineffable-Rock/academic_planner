@@ -1,29 +1,51 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, ChevronDown, CheckCircle } from 'lucide-react';
 
-// This is the dropdown component for each phase
+// New component for individual topics with their own dropdowns
+const TopicItem = ({ topic }) => {
+  const [isOpen, setIsOpen] = useState(false);
+
+  return (
+    <div className="ml-4 my-2">
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center gap-3 py-2 text-left"
+      >
+        <ChevronDown size={16} className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
+        <span className="font-semibold text-zinc-700">{topic.name}</span>
+      </button>
+      {isOpen && (
+        <ul className="pl-10 mt-1">
+          {topic.subtopics.map((subtopic, index) => (
+            <li key={index} className="flex items-center gap-3 py-1 text-zinc-600">
+              <CheckCircle size={16} className="text-gray-400" />
+              <span>{subtopic}</span>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+};
+
+// Updated component for each phase
 const RoadmapPhase = ({ phase, topics, defaultOpen = false }) => {
   const [isOpen, setIsOpen] = useState(defaultOpen);
 
   return (
-    <div className="border border-zinc-200 dark:border-zinc-700 rounded-lg mb-4">
+    <div className="border border-zinc-200 rounded-lg mb-4">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex justify-between items-center p-4 bg-zinc-50 dark:bg-zinc-800 hover:bg-zinc-100 dark:hover:bg-zinc-700 transition-colors"
+        className="w-full flex justify-between items-center p-4 bg-zinc-50 hover:bg-zinc-100 transition-colors"
       >
-        <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">{phase}</h3>
+        <h3 className="text-lg font-semibold text-zinc-800">{phase}</h3>
         <ChevronDown className={`transform transition-transform ${isOpen ? 'rotate-180' : ''}`} />
       </button>
       {isOpen && (
-        <div className="p-4 bg-white dark:bg-[#1C1C1C]">
-          <ul>
-            {topics.map((topic, index) => (
-              <li key={index} className="flex items-center gap-3 py-2 border-b border-zinc-100 dark:border-zinc-700 last:border-b-0">
-                <CheckCircle size={20} className="text-green-500" />
-                <span className="text-zinc-700 dark:text-zinc-300">{topic}</span>
-              </li>
-            ))}
-          </ul>
+        <div className="p-4 bg-white">
+          {topics.map((topic, index) => (
+            <TopicItem key={index} topic={topic} />
+          ))}
         </div>
       )}
     </div>
@@ -58,23 +80,23 @@ const RoadmapPage = ({ careerPath, onBack }) => {
 
   return (
     <div>
-      <button onClick={onBack} className="flex items-center gap-2 text-zinc-500 dark:text-zinc-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors mb-6">
+      <button onClick={onBack} className="flex items-center gap-2 text-zinc-500 hover:text-blue-500 transition-colors mb-6">
         <ArrowLeft size={20} />
         Back to Career Paths
       </button>
 
-      <h1 className="text-4xl font-bold text-zinc-800 dark:text-zinc-100">{careerPath.name} Roadmap</h1>
-      <p className="text-zinc-500 dark:text-zinc-400 mt-2 mb-8">Your step-by-step guide from beginner to advanced.</p>
+      <h1 className="text-4xl font-bold text-zinc-800">{careerPath.name} Roadmap</h1>
+      <p className="text-zinc-500 mt-2 mb-8">Your step-by-step guide from beginner to advanced.</p>
       
       {loading ? (
-        <p className="text-zinc-500 dark:text-zinc-400">Loading roadmap...</p>
+        <p className="text-zinc-500">Loading roadmap...</p>
       ) : (
         roadmap.map((item, index) => (
           <RoadmapPhase
             key={index}
             phase={item.phase}
             topics={item.topics}
-            defaultOpen={index === 0} // Open the first phase by default
+            defaultOpen={index === 0}
           />
         ))
       )}
