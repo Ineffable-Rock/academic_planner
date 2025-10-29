@@ -1,3 +1,4 @@
+// ineffable-rock/academic_planner/academic_planner-78b3aa83899e19731a8c1abb043654f5579c5dc8/frontend/src/components/CourseGraph.jsx
 import React, { useEffect, useRef, useState } from 'react';
 import { Network } from 'vis-network';
 import { useUser } from '@clerk/clerk-react';
@@ -7,7 +8,6 @@ const CourseGraph = ({ careerPath }) => {
   const { user } = useUser();
   const [completedCourses, setCompletedCourses] = useState(new Set());
 
-  // --- Fetch completed courses for logged-in user ---
   useEffect(() => {
     if (user && user.id) {
       const fetchCompletedCourses = async () => {
@@ -24,32 +24,38 @@ const CourseGraph = ({ careerPath }) => {
     }
   }, [user]);
 
-  // --- Create the graph dynamically based on selected careerPath ---
   useEffect(() => {
     const createGraph = async () => {
       try {
-        const careerId = careerPath ? careerPath.id : null;
-        const coursesUrl = `http://127.0.0.1:5000/api/courses${careerId ? `?career_path_id=${careerId}` : ''}`;
-        const prereqsUrl = `http://127.0.0.1:5000/api/prerequisites${careerId ? `?career_path_id=${careerId}` : ''}`;
+        let coursesData, prereqsData;
 
-        const [coursesRes, prereqsRes] = await Promise.all([
-          fetch(coursesUrl),
-          fetch(prereqsUrl)
-        ]);
+        if (careerPath) {
+          const response = await fetch(`http://127.0.0.1:5000/api/career-paths/${careerPath.id}/graph`);
+          if (!response.ok) {
+            throw new Error('Failed to fetch graph data for career path');
+          }
+          const data = await response.json();
+          coursesData = data.nodes;
+          prereqsData = data.edges;
+        } else {
+          const [coursesRes, prereqsRes] = await Promise.all([
+            fetch('http://127.0.0.1:5000/api/courses'),
+            fetch('http://127.0.0.1:5000/api/prerequisites')
+          ]);
 
-        if (!coursesRes.ok || !prereqsRes.ok) {
-          throw new Error('Failed to fetch graph data');
+          if (!coursesRes.ok || !prereqsRes.ok) {
+            throw new Error('Failed to fetch graph data');
+          }
+
+          coursesData = await coursesRes.json();
+          prereqsData = await prereqsRes.json();
         }
 
-        const coursesData = await coursesRes.json();
-        const prereqsData = await prereqsRes.json();
-
-        // --- Node and Edge creation ---
         const nodes = coursesData.map(course => ({
           id: course.id,
           label: course.course_code,
           title: course.course_name,
-          color: completedCourses.has(course.id) ? '#2ECC71' : '#3498DB', // Green if completed, blue otherwise
+          color: completedCourses.has(course.id) ? '#2ECC71' : '#3498DB',
         }));
 
         const edges = prereqsData.map(prereq => ({
@@ -59,12 +65,11 @@ const CourseGraph = ({ careerPath }) => {
 
         const data = { nodes, edges };
 
-        // --- XMIND-STYLE GRAPH OPTIONS ---
         const options = {
           layout: {
             hierarchical: {
               enabled: true,
-              direction: 'UD', // Up → Down layout
+              direction: 'UD',
               sortMethod: 'directed',
               levelSeparation: 100,
               nodeSpacing: 150,
@@ -83,7 +88,7 @@ const CourseGraph = ({ careerPath }) => {
             borderWidth: 1,
             color: {
               border: '#555',
-              background: '#2C3E50', // Dark blue-gray background
+              background: '#2C3E50',
               highlight: {
                 border: '#E74C3C',
                 background: '#C0392B',
@@ -96,7 +101,7 @@ const CourseGraph = ({ careerPath }) => {
           },
           edges: {
             smooth: {
-              type: 'curvedCW', // Curved lines
+              type: 'curvedCW',
               roundness: 0.2,
             },
             arrows: {

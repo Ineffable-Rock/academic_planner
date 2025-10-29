@@ -76,6 +76,8 @@ def create_app():
         print(f"✅ Initialized DB with {len(paths)} career paths and sample courses.")
 
     # ================== API ROUTES ==================
+    
+    
 
     @app.route('/')
     def index():
@@ -174,5 +176,60 @@ def create_app():
         db.session.add(new_completed)
         db.session.commit()
         return jsonify({"message": f"Course {course_code} marked complete for user {user_id}"}), 201
+    # graph
+    @app.route('/api/career-paths/<int:path_id>/graph', methods=['GET'])
+    def get_career_graph(path_id):
+        from .models import Course, CareerPath, prerequisites
+        path = CareerPath.query.get(path_id)
+        if not path:
+            return jsonify({"error": "Career path not found"}), 404
+
+        courses = path.required_courses
+        course_ids = {c.id for c in courses}
+
+        nodes = [{'id': c.id, 'course_code': c.course_code, 'course_name': c.course_name} for c in courses]
+
+        edges_query = db.session.query(prerequisites).filter(
+            prerequisites.c.course_id.in_(course_ids),
+            prerequisites.c.prerequisite_id.in_(course_ids)
+        ).all()
+
+        edges = [{'from': edge.prerequisite_id, 'to': edge.course_id} for edge in edges_query]
+
+        return jsonify({'nodes': nodes, 'edges': edges})
+    #Soem more graph
+    @app.route('/api/career-paths/<int:path_id>/full-roadmap-graph', methods=['GET'])
+    def get_full_roadmap_graph(path_id):
+        from .models import CareerPath
+        path = CareerPath.query.get(path_id)
+        if not path or path.name not in roadmaps:
+            return jsonify({"error": "Roadmap not found for this career path"}), 404
+
+        roadmap_data = roadmaps[path.name]
+        nodes = []
+        edges = []
+        
+        # Add the root node for the career path
+        root_id = f"career_{path.id}"
+        nodes.append({"id": root_id, "label": path.name, "group": "career", "level": 0})
+
+        for phase_idx, phase in enumerate(roadmap_data):
+            phase_id = f"{root_id}_phase_{phase_idx}"
+            nodes.append({"id": phase_id, "label": phase['phase'], "group": "phase", "level": 1})
+            edges.append({"from": root_id, "to": phase_id})
+
+            for topic_idx, topic in enumerate(phase['topics']):
+                topic_id = f"{phase_id}_topic_{topic_idx}"
+                nodes.append({"id": topic_id, "label": topic['name'], "group": "topic", "level": 2})
+                edges.append({"from": phase_id, "to": topic_id})
+
+                if 'subtopics' in topic:
+                    for sub_idx, sub in enumerate(topic['subtopics']):
+                        sub_id = f"{topic_id}_sub_{sub_idx}"
+                        nodes.append({"id": sub_id, "label": sub, "group": "subtopic", "level": 3, "shape": "box"})
+                        edges.append({"from": topic_id, "to": sub_id})
+                        
+        return jsonify({"nodes": nodes, "edges": edges})
 
     return app
+
