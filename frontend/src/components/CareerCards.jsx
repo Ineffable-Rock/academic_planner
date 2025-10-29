@@ -17,7 +17,8 @@ const iconMap = {
   "DevOps": <GitMerge size={28} className="text-zinc-500" />,
 };
 
-const CareerCards = () => {
+// 1. Accept onCareerSelect as a prop
+const CareerCards = ({ onCareerSelect }) => {
   const [careerPaths, setCareerPaths] = useState([]);
 
   useEffect(() => {
@@ -39,15 +40,15 @@ const CareerCards = () => {
 
   return (
     <div>
-      {/* This heading is now part of the scrollable area, but inside DashboardApp it will appear fixed */}
       <h1 className="text-3xl font-bold text-zinc-800 mb-2">Choose Your Career Path</h1>
       <p className="text-zinc-500 mb-8">Select a field to see the detailed roadmap from basic to advanced skills.</p>
       
-      {/* MODIFICATION: Adjusted grid for smaller cards */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-5">
         {careerPaths.map(path => (
           <div 
             key={path.id} 
+            // 2. Add the onClick handler to the card
+            onClick={() => onCareerSelect(path)}
             className="group aspect-square p-5 rounded-2xl border border-zinc-200 bg-white flex flex-col justify-between hover:shadow-lg hover:border-blue-500 transition-all cursor-pointer"
           >
             {/* Top Section with Icon */}
