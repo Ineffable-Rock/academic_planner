@@ -38,10 +38,15 @@ const DashboardApp = () => {
           onNavigate={handleNavigate}
         />
         <main className="flex-1 p-8 overflow-y-auto bg-white">
-          <Header 
+          {/* <div className='sticky top-0 z-50  bg-white border border-zinc-200'> */}
+            <Header 
             toggleProfileSettings={toggleProfileSettings} 
             userName={userName}
           />
+
+          {/* </div> */}
+
+
           <div>
             {activePage === 'dashboard' && (
               selectedCareer ? (
